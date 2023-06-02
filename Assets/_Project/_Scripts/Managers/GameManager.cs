@@ -59,9 +59,8 @@ namespace _Project._Scripts.Managers
         private static readonly int ChangeScene = Animator.StringToHash("ChangeScene");
         private static readonly int Pause = Animator.StringToHash("Pause");
 
-        private BlockType GetBlockTypeByValue(long value){
-            return _types.First(t => t._value == value);
-        }
+        
+        #region Life Cycle
 
         private void Start() {
             _camera = Camera.main;
@@ -103,6 +102,9 @@ namespace _Project._Scripts.Managers
             } 
         }
 
+        #endregion
+        
+        #region State Functions
         private void ChangeState(GameState state){
             _state = state;
             Debug.Log($"Changed state to {state}");
@@ -148,7 +150,6 @@ namespace _Project._Scripts.Managers
                     throw new ArgumentOutOfRangeException(nameof(state), state, null);
             }
         }
-
         void GenerateGrid() {
             _nodes = new List<Node>();
             _blocks = new List<Block>();
@@ -251,85 +252,7 @@ namespace _Project._Scripts.Managers
             _blocks.Remove(block);
             Destroy(block.gameObject);
         }
-
-        Node GetNodeAtPosition(Vector2 pos){
-            return _nodes.FirstOrDefault(n => n.Pos == pos);
-        }
-
-        GameState CheckEndGame()
-        {
-            if (_blocks.Any(b => b._value == _targetNumToReach)) {
-                if (_targetNumToReach == _expandThresholds.Last())
-                    return GameState.Win;
-                else 
-                    return GameState.Expand;
-            }
-            else if (CheckLoseCondition()) return GameState.Lose;
-            return GameState.WaitingInput;
-        }
-
-        Block GetBlockAtPosition(Vector2 pos){
-            return _blocks.FirstOrDefault(b => b.Pos == pos);
-        }
-
-        Block GetBlockByValue(long value){
-            return _blocks.FirstOrDefault(b => b._value == value);
-        }
-
-        bool CheckLoseCondition()
-        {
-            var freeNodes = _nodes.Where(n => n._occupiedBlock == null).OrderBy(_ => Random.value).ToList();
-            if (freeNodes.Any()) return false;
-
-            foreach (var block in _blocks)
-            {   
-                var leftBlock = GetBlockAtPosition(new Vector2(block.Pos.x - 1, block.Pos.y));
-                var rightBlock = GetBlockAtPosition(new Vector2(block.Pos.x + 1, block.Pos.y));
-                var topBlock = GetBlockAtPosition(new Vector2(block.Pos.x, block.Pos.y + 1));
-                var bottomBlock = GetBlockAtPosition(new Vector2(block.Pos.x, block.Pos.y - 1));
-
-                if (leftBlock != null && leftBlock._value == block._value) return false;
-                if (rightBlock != null && rightBlock._value == block._value) return false;
-                if (topBlock != null && topBlock._value == block._value) return false;
-                if (bottomBlock != null && bottomBlock._value == block._value) return false;
-            }
-            return true;
-        }
-
-        public void OnMenuButtonClicked(){
-            _loadSceneSmootherAnimator.SetTrigger(ChangeScene);
-            ChangeState(GameState.SceneTransition);
-        }
-
-        public void OnRestartButtonClicked(){
-            _loadSceneSmootherAnimator.SetTrigger(ChangeScene);
-            ChangeState(GameState.Restart);
-        }
-
-        public void OnPauseButtonClicked(){
-            _pauseScreen.GetComponent<Animator>().SetTrigger(Pause);
-            _totalPausedTime = Time.time;
-            ChangeState(GameState.Paused);
-        }
-
-        public void OnResumeButtonClicked(){
-            _pauseScreen.GetComponent<Animator>().SetTrigger(Pause);
-            _totalPausedTime = Time.time - _totalPausedTime;
-            _totalGameTime += _totalPausedTime;
-            ChangeState(GameState.WaitingInput);
-        }
-
-        public void OnSoundButtonClicked() {
-            if (AudioSystem.Instance.IsMuted()) {
-                AudioSystem.Instance.Unmute();
-                _soundButton.sprite = _soundOn;
-            }
-            else {
-                AudioSystem.Instance.Mute();
-                _soundButton.sprite = _soundOff;
-            }
-        }
-
+        
         void Expand(){
             _width++;
             _height++;
@@ -374,6 +297,98 @@ namespace _Project._Scripts.Managers
 
             ChangeState(GameState.WaitingInput);
         }
+
+        #endregion
+
+        #region Utils
+
+        private BlockType GetBlockTypeByValue(long value){
+            return _types.First(t => t._value == value);
+        }
+        
+        Block GetBlockByValue(long value){
+            return _blocks.FirstOrDefault(b => b._value == value);
+        }
+
+        Node GetNodeAtPosition(Vector2 pos){
+            return _nodes.FirstOrDefault(n => n.Pos == pos);
+        }
+
+        Block GetBlockAtPosition(Vector2 pos){
+            return _blocks.FirstOrDefault(b => b.Pos == pos);
+        }
+        
+        GameState CheckEndGame()
+        {
+            if (_blocks.Any(b => b._value == _targetNumToReach)) {
+                if (_targetNumToReach == _expandThresholds.Last())
+                    return GameState.Win;
+                else 
+                    return GameState.Expand;
+            }
+            else if (CheckLoseCondition()) return GameState.Lose;
+            return GameState.WaitingInput;
+        }
+
+        bool CheckLoseCondition()
+        {
+            var freeNodes = _nodes.Where(n => n._occupiedBlock == null).OrderBy(_ => Random.value).ToList();
+            if (freeNodes.Any()) return false;
+
+            foreach (var block in _blocks)
+            {   
+                var leftBlock = GetBlockAtPosition(new Vector2(block.Pos.x - 1, block.Pos.y));
+                var rightBlock = GetBlockAtPosition(new Vector2(block.Pos.x + 1, block.Pos.y));
+                var topBlock = GetBlockAtPosition(new Vector2(block.Pos.x, block.Pos.y + 1));
+                var bottomBlock = GetBlockAtPosition(new Vector2(block.Pos.x, block.Pos.y - 1));
+
+                if (leftBlock != null && leftBlock._value == block._value) return false;
+                if (rightBlock != null && rightBlock._value == block._value) return false;
+                if (topBlock != null && topBlock._value == block._value) return false;
+                if (bottomBlock != null && bottomBlock._value == block._value) return false;
+            }
+            return true;
+        }
+
+        #endregion
+
+        #region Handlers
+
+        public void OnMenuButtonClicked(){
+            _loadSceneSmootherAnimator.SetTrigger(ChangeScene);
+            ChangeState(GameState.SceneTransition);
+        }
+
+        public void OnRestartButtonClicked(){
+            _loadSceneSmootherAnimator.SetTrigger(ChangeScene);
+            ChangeState(GameState.Restart);
+        }
+
+        public void OnPauseButtonClicked(){
+            _pauseScreen.GetComponent<Animator>().SetTrigger(Pause);
+            _totalPausedTime = Time.time;
+            ChangeState(GameState.Paused);
+        }
+
+        public void OnResumeButtonClicked(){
+            _pauseScreen.GetComponent<Animator>().SetTrigger(Pause);
+            _totalPausedTime = Time.time - _totalPausedTime;
+            _totalGameTime += _totalPausedTime;
+            ChangeState(GameState.WaitingInput);
+        }
+
+        public void OnSoundButtonClicked() {
+            if (AudioSystem.Instance.IsMuted()) {
+                AudioSystem.Instance.Unmute();
+                _soundButton.sprite = _soundOn;
+            }
+            else {
+                AudioSystem.Instance.Mute();
+                _soundButton.sprite = _soundOff;
+            }
+        }
+
+        #endregion
     }
 
     [Serializable]
