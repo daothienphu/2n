@@ -1,4 +1,7 @@
-using UnityEngine;
+using _Project._Scripts.Utilities;
 
-public class Systems : PersistentSingleton<Systems> {
+namespace _Project._Scripts.Systems
+{
+    public class Systems : PersistentSingleton<Systems> {
+    }
 }

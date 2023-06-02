@@ -1,8 +1,10 @@
 using UnityEngine;
-using System.Collections;
 
-public class Utils: MonoBehaviour {
+namespace _Project._Scripts.Utilities
+{
+    public class Utils: MonoBehaviour {
 
 
   
+    }
 }

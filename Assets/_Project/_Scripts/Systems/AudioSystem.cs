@@ -1,39 +1,44 @@
+using _Project._Scripts.Utilities;
 using UnityEngine;
+using UnityEngine.Serialization;
 
-public class AudioSystem : Singleton<AudioSystem>
+namespace _Project._Scripts.Systems
 {
-    [SerializeField] private AudioSource _musicSource;
-    [SerializeField] private AudioSource _soundsSource;
-    [SerializeField] private bool canPlaySound = true;
-    public void PlayMusic(AudioClip clip){
-        if (canPlaySound){
-            _musicSource.clip = clip;
-            _musicSource.Play();
+    public class AudioSystem : Singleton<AudioSystem>
+    {
+        [SerializeField] private AudioSource _musicSource;
+        [SerializeField] private AudioSource _soundsSource;
+        [FormerlySerializedAs("canPlaySound")] [SerializeField] private bool _canPlaySound = true;
+        public void PlayMusic(AudioClip clip){
+            if (_canPlaySound){
+                _musicSource.clip = clip;
+                _musicSource.Play();
+            }
         }
-    }
 
-    public void PlaySound(AudioClip clip, Vector3 pos, float vol = 1) {
-        if (canPlaySound){
-            _soundsSource.transform.position = pos;
-            PlaySound(clip, vol);
+        public void PlaySound(AudioClip clip, Vector3 pos, float vol = 1) {
+            if (_canPlaySound){
+                _soundsSource.transform.position = pos;
+                PlaySound(clip, vol);
+            }
         }
-    }
 
-    public void PlaySound(AudioClip clip, float vol = 1){
-        if (canPlaySound){
-            _soundsSource.PlayOneShot(clip, vol);
+        public void PlaySound(AudioClip clip, float vol = 1){
+            if (_canPlaySound){
+                _soundsSource.PlayOneShot(clip, vol);
+            }
         }
-    }
 
-    public void Mute(){
-        canPlaySound = false;
-    }
+        public void Mute(){
+            _canPlaySound = false;
+        }
 
-    public void Unmute(){
-        canPlaySound = true;
-    }
+        public void Unmute(){
+            _canPlaySound = true;
+        }
 
-    public bool IsMuted(){
-        return !canPlaySound;
+        public bool IsMuted(){
+            return !_canPlaySound;
+        }
     }
 }

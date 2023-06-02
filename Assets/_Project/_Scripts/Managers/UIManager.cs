@@ -1,23 +1,30 @@
-using UnityEngine;
 using System.Collections;
+using _Project._Scripts.Utilities;
+using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 
-public class UIManager : MonoBehaviour {
+namespace _Project._Scripts.Managers
+{
+    public class UIManager : MonoBehaviour {
 
-    [SerializeField] private Animator _mainUIAnimator;
-    [SerializeField] private BGScroller _BGScroller;
-    public void OnStartButtonClicked(){
-        _BGScroller.LoadOutBG();
-        _mainUIAnimator.SetTrigger("LoadOut");
-        StartCoroutine(LoadSceneDelay(1f, "MainScene"));
-    }
+        [SerializeField] private Animator _mainUIAnimator;
+        [FormerlySerializedAs("_BGScroller")] [SerializeField] private BgScroller _bgScroller;
+        private static readonly int LoadOut = Animator.StringToHash("LoadOut");
 
-    public void OnQuitButtonClicked(){
-        Application.Quit();
-    }
+        public void OnStartButtonClicked(){
+            _bgScroller.LoadOutBg();
+            _mainUIAnimator.SetTrigger(LoadOut);
+            StartCoroutine(LoadSceneDelay(1f, "MainScene"));
+        }
 
-    IEnumerator LoadSceneDelay(float t, string sceneName){
-        yield return new WaitForSeconds(t);
-        SceneManager.LoadScene(sceneName);
+        public void OnQuitButtonClicked(){
+            Application.Quit();
+        }
+
+        IEnumerator LoadSceneDelay(float t, string sceneName){
+            yield return new WaitForSeconds(t);
+            SceneManager.LoadScene(sceneName);
+        }
     }
 }
